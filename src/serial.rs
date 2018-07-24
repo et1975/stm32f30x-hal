@@ -174,6 +174,12 @@ macro_rules! hal {
             }
             
             impl Rx<$USARTX> {
+                /// check if we have something to read
+                pub fn has_data(&mut self) -> bool {
+                    let isr = unsafe { (*$USARTX::ptr()).isr.read() };
+                    return isr.rxne().bit_is_set()
+                }
+
                 /// clear overrun
                 pub fn clear_overrun_error(&mut self) -> u8 {
                     unsafe { (*$USARTX::ptr()).icr.write(|w| w.orecf().set_bit()) };
@@ -181,7 +187,7 @@ macro_rules! hal {
                     (rdr.bits() & 0xFF) as u8
                 }
             }
-            
+
             impl serial::Read<u8> for Rx<$USARTX> {
                 type Error = Error;
 
