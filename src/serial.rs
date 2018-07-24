@@ -172,7 +172,16 @@ macro_rules! hal {
                     (self.usart, self.pins)
                 }
             }
-
+            
+            impl Rx<$USARTX> {
+                /// clear overrun
+                pub fn clear_overrun_error(&mut self) -> u8 {
+                    unsafe { (*$USARTX::ptr()).icr.write(|w| w.orecf().set_bit()) };
+                    let rdr = unsafe { (*$USARTX::ptr()).rdr.read() };
+                    (rdr.bits() & 0xFF) as u8
+                }
+            }
+            
             impl serial::Read<u8> for Rx<$USARTX> {
                 type Error = Error;
 
